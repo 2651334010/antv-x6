@@ -1,0 +1,79 @@
+<template>
+  <div>
+    <el-select v-model="selectedItem" placeholder="请选择要加载的图表">
+      <el-option
+        v-for="item in savedItems"
+        :key="item.name"
+        :label="item.name"
+        :value="item.name"
+      >
+      </el-option>
+    </el-select>
+
+    <el-button @click="loadGraph" :disabled="!selectedItem">加载图表</el-button>
+
+    <!-- Graph rendering area -->
+    <div ref="graphContainer" id="flow-container" style="height: 600px; border: 1px solid #ccc;"></div>
+  </div>
+</template>
+
+<script>
+import FlowGraph from './flow-x6/graph'
+import { $, getContainerSize } from '../utils'
+
+export default {
+  data() {
+    return {
+      savedItems: [], // Array to store saved JSON item names
+      selectedItem: '', // Selected item from dropdown
+      graph: null // Graph instance
+    }
+  },
+  created() {
+    this.initGraph()
+    this.fetchSavedItems()
+  },
+  methods: {
+    // Method to initialize the graph instance
+    initGraph() {
+      // 初始化画板
+      this.graph = new FlowGraph({
+        container: this.$refs.graphContainer,
+        width: 800,
+        height: 600,
+        // Disable interaction and editing capabilities
+        interacting: false,
+        resizing: false,
+        embedding: false,
+        connecting: {
+          snap: false,
+          allowBlank: false,
+          allowLoop: false,
+          allowMultiEdges: false,
+          allowNodeDrop: false,
+          allowEdgeDrop: false
+        },
+        // Add other graph configuration options as needed
+      })
+    },
+    // Method to fetch saved item names from localStorage
+    fetchSavedItems() {
+      const keys = Object.keys(localStorage)
+      this.savedItems = keys.map(key => ({ name: key }))
+    },
+    // Method to load selected graph JSON
+    loadGraph() {
+      const selectedName = this.selectedItem
+      if (selectedName && localStorage.getItem(selectedName)) {
+        const jsonData = JSON.parse(localStorage.getItem(selectedName))
+		 console.log(this.graph)
+        this.graph.initGraphShape(jsonData)
+      }
+    }
+  }
+}
+</script>
+
+<style scoped>
+/* Add your scoped styles here */
+</style>
